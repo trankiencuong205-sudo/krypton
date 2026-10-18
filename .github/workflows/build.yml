@@ -6,14 +6,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: for z in *.zip; do unzip -q -o "$z"; done
-      - run: sed -i "s/1.14-SNAPSHOT/1.11-SNAPSHOT/" krypton-fix/build.gradle
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.14
+          gradle-version: 9.2.0
       - name: Build
         working-directory: krypton-fix
         run: |
@@ -21,7 +20,7 @@ jobs:
           gradle build --no-daemon --console=plain > ../build.log 2>&1
           code=$?
           if [ $code -ne 0 ]; then
-            msg=$(grep -E "error:|What went wrong|Could not|FAILED|Caused by|not found" -A2 ../build.log | head -n 30 | sed ':a;N;$!ba;s/\n/%0A/g')
+            msg=$(grep -E "error:|What went wrong|Could not|FAILED|Caused by|not found|incompatible|variant" -A4 ../build.log | head -n 40 | sed ':a;N;$!ba;s/\n/%0A/g')
             echo "::error title=GRADLE LOI::$msg"
             tail -n 40 ../build.log
           fi
