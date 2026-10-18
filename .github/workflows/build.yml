@@ -6,6 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: for z in *.zip; do unzip -q -o "$z"; done
+      - run: sed -i "s/1.14-SNAPSHOT/1.11-SNAPSHOT/" krypton-fix/build.gradle
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
