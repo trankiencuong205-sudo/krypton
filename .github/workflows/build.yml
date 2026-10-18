@@ -1,0 +1,31 @@
+name: Build mod
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: for z in *.zip; do unzip -q -o "$z"; done
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.14
+      - name: Build
+        working-directory: krypton-fix
+        run: |
+          set +e
+          gradle build --no-daemon --console=plain > ../build.log 2>&1
+          code=$?
+          if [ $code -ne 0 ]; then
+            msg=$(grep -E "error:|What went wrong|Could not|FAILED|Caused by|not found" -A2 ../build.log | head -n 30 | sed ':a;N;$!ba;s/\n/%0A/g')
+            echo "::error title=GRADLE LOI::$msg"
+            tail -n 40 ../build.log
+          fi
+          exit $code
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mod
+          path: krypton-fix/build/libs/*.jar
